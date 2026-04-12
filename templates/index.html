@@ -44,6 +44,47 @@
         </tr>
         {% endfor %}
     </table>
+
+    <!-- Zona de Descargas Oficial -->
+    <div style="margin:40px auto 0 auto; max-width:500px; text-align:center;">
+        <h2 style="color:#00FFFF; text-shadow:0 0 8px #00FFFF, 0 0 16px #00FFFF; margin-bottom:18px;">Zona de Descargas Oficial</h2>
+        <a href="https://www.mediafire.com/file/p568ehl26xyw326/atmbot-1.0-armeabi-v7a_arm64-v8a-debug_%25281%2529.apk/file" target="_blank" style="text-decoration:none;">
+            <button class="glow-pulse-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#00FFFF" viewBox="0 0 24 24" style="margin-right:10px;vertical-align:middle;"><path d="M12 16.5a1 1 0 0 1-.7-.29l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 2 0v9.09l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5A1 1 0 0 1 12 16.5z"></path><path d="M20 20H4a1 1 0 0 1 0-2h16a1 1 0 0 1 0 2z"></path></svg>
+                DESCARGAR SENTINEL v1.1 (ESTABLE)
+            </button>
+        </a>
+    </div>
+
+    <style>
+    @keyframes glowPulse {
+        0% { box-shadow: 0 0 16px #00FFFF, 0 0 32px #00FFFF; }
+        50% { box-shadow: 0 0 32px #00FFFF, 0 0 64px #00FFFF; }
+        100% { box-shadow: 0 0 16px #00FFFF, 0 0 32px #00FFFF; }
+    }
+    .glow-pulse-btn {
+        background: #000;
+        color: #00FFFF;
+        border: 2.5px solid #00FFFF;
+        border-radius: 12px;
+        padding: 22px 38px;
+        font-size: 1.25em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background 0.2s, color 0.2s;
+        animation: glowPulse 1.6s infinite;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 0 16px #00FFFF, 0 0 32px #00FFFF;
+        text-shadow: 0 0 8px #00FFFF;
+    }
+    .glow-pulse-btn:hover {
+        background: #00FFFF;
+        color: #000;
+    }
+    </style>
     <script>
     // JS para ocultar filas vencidas si se pulsa FILTRAR ACTIVOS
     document.addEventListener('DOMContentLoaded', function() {
@@ -58,6 +99,18 @@
             </tbody>
         </table>
         <div class="footer">ATM BOT v1.0 - Acceso Restringido - Diosamor Protocol</div>
+
+        <!-- Recursos para Socios -->
+        <div style="margin-top:40px; text-align:center;">
+            <h2 style="color:#00FFFF; text-shadow:0 0 8px #00FFFF, 0 0 16px #00FFFF;">Recursos para Socios</h2>
+            <a href="ENLACE_DE_DESCARGA_AQUI" target="_blank" style="display:inline-block; margin-top:20px; text-decoration:none;">
+                <button style="background:#00FFFF; color:#000; border:none; border-radius:8px; padding:18px 36px; font-size:1.3em; font-weight:bold; box-shadow:0 0 16px #00FFFF, 0 0 32px #00FFFF; cursor:pointer; display:flex; align-items:center; gap:12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#000" viewBox="0 0 24 24"><path d="M12 16.5a1 1 0 0 1-.7-.29l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 2 0v9.09l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5A1 1 0 0 1 12 16.5z"></path><path d="M20 20H4a1 1 0 0 1 0-2h16a1 1 0 0 1 0 2z"></path></svg>
+                    Descargar ATM BOT v1.0 (APK)
+                </button>
+            </a>
+            <div style="color:#00FFFF; margin-top:10px; font-size:0.95em;">Instala la app, ábrela y espera tu aprobación.</div>
+        </div>
     </div>
 </body>
 </html>
