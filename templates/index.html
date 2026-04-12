@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM BOT | Centro de Mando</title>
+    <style>
+        body { background-color: #0b0e14; color: #00ffff; font-family: 'Courier New', monospace; margin: 20px; }
+        h1 { text-shadow: 0 0 10px #00ffff; border-bottom: 2px solid #00ffff; padding-bottom: 10px; }
+        .container { border: 1px solid #00ffff; padding: 20px; box-shadow: 0 0 15px #004444; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #004444; padding: 12px; text-align: left; }
+        th { background-color: #004444; color: white; }
+        .status-active { color: #39ff14; font-weight: bold; }
+        .status-pending { color: #ff3131; font-weight: bold; }
+        button { background: transparent; color: #00ffff; border: 1px solid #00ffff; padding: 5px 10px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #00ffff; color: #000; }
+        .footer { margin-top: 30px; font-size: 0.8em; opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SENTINEL CORE: ADMISIÓN</h1>
+        <p>Dispositivos enlazados al sistema ATM BOT</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Socio</th>
+                    <th>HWID (Device)</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for socio in socios %}
+                <tr>
+                    <td>{{ socio.nombre }}</td>
+                    <td>{{ socio.hwid }}</td>
+                    <td class="status-{{ socio.status.lower() }}">{{ socio.status }}</td>
+                    <td>
+                        <form action="/update/{{ socio.hwid }}" method="POST">
+                            <button type="submit">CAMBIAR STATUS</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="footer">ATM BOT v1.0 - Acceso Restringido - Diosamor Protocol</div>
+    </div>
+</body>
+</html>

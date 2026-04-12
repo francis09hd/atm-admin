@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Dispositivos</title>
+    <style>
+        body { background: #0B0E14; color: #00FFFF; font-family: 'Segoe UI', Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { border: 1px solid #00FFFF; padding: 10px; text-align: center; }
+        th { background: #181A20; }
+        tr:nth-child(even) { background: #181A20; }
+        .btn { background: #00FFFF; color: #0B0E14; border: none; padding: 6px 16px; margin: 2px; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #00bfbf; }
+    </style>
+</head>
+<body>
+    <h2>Dispositivos Registrados</h2>
+    <table>
+        <tr>
+            <th>HWID</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+        {% for device in devices %}
+        <tr>
+            <td>{{ device['hwid'] }}</td>
+            <td>{{ device['status'] }}</td>
+            <td>
+                <a href="/update_status/{{ device['hwid'] }}/approved" class="btn">Aprobar</a>
+                <a href="/update_status/{{ device['hwid'] }}/blocked" class="btn">Bloquear</a>
+                <a href="/update_status/{{ device['hwid'] }}/pending" class="btn">Pendiente</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
