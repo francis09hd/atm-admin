@@ -4,47 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATM BOT | Centro de Mando</title>
-    <style>
-        body { background-color: #0b0e14; color: #00ffff; font-family: 'Courier New', monospace; margin: 20px; }
-        h1 { text-shadow: 0 0 10px #00ffff; border-bottom: 2px solid #00ffff; padding-bottom: 10px; }
-        .container { border: 1px solid #00ffff; padding: 20px; box-shadow: 0 0 15px #004444; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #004444; padding: 12px; text-align: left; }
-        th { background-color: #004444; color: white; }
-        .status-active { color: #39ff14; font-weight: bold; }
-        .status-pending { color: #ff3131; font-weight: bold; }
-        button { background: transparent; color: #00ffff; border: 1px solid #00ffff; padding: 5px 10px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #00ffff; color: #000; }
-        .footer { margin-top: 30px; font-size: 0.8em; opacity: 0.6; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>SENTINEL CORE: ADMISIÓN</h1>
-        <p>Dispositivos enlazados al sistema ATM BOT</p>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Socio</th>
-                    <th>HWID (Device)</th>
-                    <th>Estado</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for socio in socios %}
-                <tr>
-                    <td>{{ socio.nombre }}</td>
-                    <td>{{ socio.hwid }}</td>
-                    <td class="status-{{ socio.status.lower() }}">{{ socio.status }}</td>
-                    <td>
-                        <form action="/update/{{ socio.hwid }}" method="POST">
-                            <button type="submit">CAMBIAR STATUS</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
+    <form method="post">
+        <input name="hwid" placeholder="HWID" required>
+        <input name="nombre_socio" placeholder="Nombre del socio">
+        <select name="plan" required>
+            <option value="1 Mes">1 Mes</option>
+            <option value="3 Meses">3 Meses</option>
+            <option value="1 Año">1 Año</option>
+        </select>
+        <button class="btn" type="submit">Registrar</button>
+    </form>
+    <form method="get" style="margin-top:10px;">
+        <button class="btn" name="activos" value="1" type="submit">FILTRAR ACTIVOS</button>
+        <a href="/" class="btn">Mostrar Todos</a>
+    </form>
+    <table>
+        <tr>
+            <th>HWID</th>
+            <th>Nombre Socio</th>
+            <th>Plan</th>
+            <th>VENCIMIENTO</th>
+            <th>Días Restantes</th>
+            <th>Status</th>
+            <th>Acciones</th>
+        </tr>
+        {% for d in dispositivos %}
+        {% set status, color, dias_restantes = estado_visual(d['status'], d['fecha_vencimiento']) %}
+        <tr>
+            <td>{{ d['hwid'] }}</td>
+            <td>{{ d['nombre_socio'] or '' }}</td>
+            <td>{{ d['plan'] or '' }}</td>
+            <td>{{ d['fecha_vencimiento'] or '' }}</td>
+            <td>{{ dias_restantes }}</td>
+            <td class="{{ color }}">{{ status }}</td>
+            <td>
+                <button class="btn" name="aprobar_{{ d['hwid'] }}" type="submit">APROBAR</button>
+                <button class="btn" name="bloquear_{{ d['hwid'] }}" type="submit">BLOQUEAR</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <script>
+    // JS para ocultar filas vencidas si se pulsa FILTRAR ACTIVOS
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('activos') === '1') {
+            document.querySelectorAll('tr').forEach(function(row) {
+                if(row.querySelector('.rojo')) row.style.display = 'none';
+            });
+        }
+    });
+    </script>
             </tbody>
         </table>
         <div class="footer">ATM BOT v1.0 - Acceso Restringido - Diosamor Protocol</div>
