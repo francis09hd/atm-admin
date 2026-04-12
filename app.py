@@ -162,27 +162,27 @@ def index():
 @app.route('/validar/<hwid>')
 def validar(hwid):
     conn = get_db()
-    c = conn.cursor()
-    c.execute('SELECT status, fecha_vencimiento FROM dispositivos WHERE hwid=?', (hwid,))
-    row = c.fetchone()
-    if not row:
-        conn.close()
+    try:
+        c = conn.cursor()
+        c.execute('SELECT status, fecha_vencimiento FROM dispositivos WHERE hwid=?', (hwid,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({"access": "denied"})
+        if row['status'] == 'aprobado' and row['fecha_vencimiento']:
+            try:
+                vencimiento = datetime.strptime(row['fecha_vencimiento'], '%Y-%m-%d').date()
+                hoy = datetime.now().date()
+                if hoy <= vencimiento:
+                    return jsonify({"access": "granted"})
+                else:
+                    # Auto-update status to Expirado when subscription has expired
+                    c.execute('UPDATE dispositivos SET status=? WHERE hwid=?', ('Expirado', hwid))
+                    conn.commit()
+            except Exception:
+                pass
         return jsonify({"access": "denied"})
-    if row['status'] == 'aprobado' and row['fecha_vencimiento']:
-        try:
-            vencimiento = datetime.strptime(row['fecha_vencimiento'], '%Y-%m-%d').date()
-            hoy = datetime.now().date()
-            if hoy <= vencimiento:
-                conn.close()
-                return jsonify({"access": "granted"})
-            else:
-                # Auto-update status to Expirado when subscription has expired
-                c.execute('UPDATE dispositivos SET status=? WHERE hwid=?', ('Expirado', hwid))
-                conn.commit()
-        except:
-            pass
-    conn.close()
-    return jsonify({"access": "denied"})
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)
