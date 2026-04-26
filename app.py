@@ -66,7 +66,12 @@ def _upsert_device(hwid, nombre="", email=""):
 
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"status": "online", "message": "SENTINEL STARK ACTIVE"})
+    return jsonify({"status": "online", "message": "SENTINEL ACTIVE"})
+
+
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    return ("", 204)
 
 
 @app.route("/validate", methods=["POST"])
