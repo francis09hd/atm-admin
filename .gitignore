@@ -1,0 +1,15 @@
+.git/
+.venv/
+.venv311/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.DS_Store
+node_modules/
+.env
+.env.local
+*.log
+*.db
+devices.json
+cache/
