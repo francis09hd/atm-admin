@@ -17,9 +17,9 @@ def home():
 @app.route('/validate', methods=['POST'])
 def validate_device():
     # Aquí es donde el bot enviará el ID del celular más adelante
-    data = request.json
-    device_id = data.get("device_id")
-    return jsonify({"authorized": True, "user": "Edwin_Admin"})
+    data = request.get_json(silent=True) or {}
+    device_id = data.get("device_id", "unknown")
+    return jsonify({"authorized": True, "user": "Edwin_Admin", "device_id": device_id})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
