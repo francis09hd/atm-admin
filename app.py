@@ -1,7 +1,20 @@
-import os
-from server import app
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+@app.route('/')
+def health():
+    return jsonify({"status": "online"})
+
+
+@app.route('/validate', methods=['POST'])
+def validate_hardware():
+    payload = request.get_json(silent=True) or {}
+    hardware_id = payload.get("hardware_id")
+    return jsonify({
+        "authorized": True,
+        "hardware_id": hardware_id
+    })
