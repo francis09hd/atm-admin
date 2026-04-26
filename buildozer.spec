@@ -1,22 +1,30 @@
 [app]
-title = ATM BOT
+title = Sentinel Core
 package.name = atmbot
-package.domain = org.edwin.atmbot
+package.domain = org.nosotrord.sentinel
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 1.0
 
 # Punto de entrada
-entrypoint = BOT_CORE/main.py
+source.main = BOT_CORE/main.py
 
 # Requerimientos
-requirements = python3,kivy,requests,pillow,numpy,android
+requirements = python3,kivy,kivymd,requests,pillow,numpy,kivy_garden.mapview,pyjnius,plyer
 
 # Orientación
 orientation = portrait
 
 # Permisos de Android
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_PHONE_STATE
+# Incluye GPS, internet, foreground service, overlay y almacenamiento.
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,FOREGROUND_SERVICE,WAKE_LOCK,SYSTEM_ALERT_WINDOW,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,RECEIVE_BOOT_COMPLETED,POST_NOTIFICATIONS
+
+# Código Java adicional para boot receiver + actividad de arranque.
+android.add_src = android_src
+android.extra_manifest_xml = android_src/extra_manifest.xml
+
+# Servicio en segundo plano (scanner/logica)
+services = sentinelscan:BOT_CORE/services/sentinel_scan_service.py
 
 # SDK/NDK
 android.minapi = 21

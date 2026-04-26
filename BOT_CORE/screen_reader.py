@@ -1,8 +1,9 @@
 import uiautomator2 as u2
 import re
 
-def find_price_buttons(device_ip="127.0.0.1:62001"):
-    d = u2.connect(device_ip)
+def find_price_buttons(d=None, device_ip="127.0.0.1:62001"):
+    if d is None:
+        d = u2.connect(device_ip)
     d.dump_hierarchy()
     nodes = d.xpath('//*[@clickable="true"]').all()
     result = []
