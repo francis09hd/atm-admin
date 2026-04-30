@@ -1,22 +1,11 @@
 from flask import Flask, render_template_string, request, jsonify
 from flask_cors import CORS
-import json
-import os
 
 app = Flask(__name__)
 CORS(app)
 
-DB_FILE = 'devices.json'
-
-def load_db():
-    if os.path.exists(DB_FILE):
-        try:
-            with open(DB_FILE, 'r') as f: return json.load(f)
-        except: return {}
-    return {}
-
-def save_db(data):
-    with open(DB_FILE, 'w') as f: json.dump(data, f)
+# Base de datos en memoria (RAM)
+db = {}
 
 @app.route('/')
 def home():
@@ -24,55 +13,93 @@ def home():
 
 @app.route('/validate', methods=['POST', 'GET'])
 @app.route('/validar/<hwid>', methods=['GET', 'POST'])
-@app.route('/protocol/v1/verify/<hwid>', methods=['GET', 'POST'])
 def validate(hwid=None):
-    if request.method == 'POST':
-        data = request.json or {}
-        device_id = data.get('hardware_id') or data.get('hwid')
-        name = data.get('nombre') or data.get('name', 'Desconocido')
-    else:
-        device_id = hwid
-        name = "Legacy/GET"
-
+    # Detecta el ID si viene por URL o por JSON (POST)
+    device_id = hwid or (request.json.get('hardware_id') if (request.is_json and request.json) else None)
+    
     if not device_id:
-        return jsonify({"authorized": False, "status": "error", "message": "No HWID"}), 400
+        return jsonify({"error": "No HWID"}), 400
 
-    db = load_db()
-    
-    if device_id in db and db[device_id]['status'] == 'authorized':
-        return jsonify({"authorized": True, "status": "active", "online": True})
-    
     if device_id not in db:
-        db[device_id] = {"name": name, "status": "pending"}
-        save_db(db)
+        db[device_id] = {"status": "pending", "name": "Dispositivo Nuevo"}
     
-    return jsonify({"authorized": False, "status": "pending", "online": True, "message": "Esperando aprobación"})
+    return jsonify({
+        "authorized": db[device_id]['status'] == 'authorized',
+        "status": db[device_id]['status'],
+        "online": True
+    })
 
 @app.route('/admin')
 def admin_panel():
-    db = load_db()
+    # --- AQUÍ ESTÁ EL DISEÑO DE LA INTERFAZ ---
     html = '''
-    <style>body{background:#111;color:#0f0;font-family:monospace;padding:20px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #0f0;padding:10px;text-align:left;} a{color:#fff;background:#060;padding:5px 10px;text-decoration:none;}</style>
-    <h1>ADMIN SENTINEL - CONTROL DE ACCESO</h1>
-    <table>
-        <tr><th>HWID (ID Dispositivo)</th><th>Nombre/Info</th><th>Estado</th><th>Acción</th></tr>
-        {% for id, info in db.items() %}
-        <tr>
-            <td>{{ id }}</td><td>{{ info.name }}</td><td>{{ info.status }}</td>
-            <td>{% if info.status != 'authorized' %}<a href="/approve/{{ id }}">AUTORIZAR</a>{% else %}ACTIVO{% endif %}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SENTINEL ADMIN</title>
+        <style>
+            body { background-color: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+            h1 { color: #00ff41; text-shadow: 0 0 10px #00ff41; font-size: 1.5rem; text-align: center; }
+            .container { max-width: 600px; margin: auto; border: 1px solid #00ff41; padding: 15px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #00ff41; padding: 10px; text-align: center; font-size: 0.8rem; }
+            th { background: #003300; }
+            .btn { display: inline-block; padding: 5px 10px; background: #00ff41; color: #000; text-decoration: none; font-weight: bold; border-radius: 3px; }
+            .status-pending { color: #ff3e3e; }
+            .status-ok { color: #00ff41; font-weight: bold; }
+            .footer { margin-top: 20px; font-size: 0.7rem; text-align: center; opacity: 0.6; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>SENTINEL CORE v1.0</h1>
+            <p style="text-align:center; font-size: 0.8rem;">[ SISTEMA ONLINE - BIENVENIDO EDWIN ]</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID DISPOSITIVO</th>
+                        <th>ESTADO</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for id, info in devices.items() %}
+                    <tr>
+                        <td>{{ id }}</td>
+                        <td class="{{ 'status-ok' if info.status == 'authorized' else 'status-pending' }}">
+                            {{ info.status.upper() }}
+                        </td>
+                        <td>
+                            {% if info.status != 'authorized' %}
+                                <a href="/approve/{{ id }}" class="btn">AUTORIZAR</a>
+                            {% else %}
+                                [ ACCESO OK ]
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if not devices %}
+            <p style="text-align:center; padding: 20px; color: #888;">Esperando conexión del bot...</p>
+            {% endif %}
+
+            <div class="footer">PROPIEDAD DE NOSOTROS RD - DOMINICANA</div>
+        </div>
+    </body>
+    </html>
     '''
-    return render_template_string(html, db=db)
+    return render_template_string(html, devices=db)
 
 @app.route('/approve/<id>')
 def approve(id):
-    db = load_db()
     if id in db:
         db[id]['status'] = 'authorized'
-        save_db(db)
-    return f"<h1>Dispositivo {id} Autorizado.</h1><br><a href='/admin'>Volver al Panel</a>"
+    return f'<script>alert("Dispositivo {id} Autorizado"); window.location.href="/admin";</script>'
 
 if __name__ == '__main__':
     app.run()
