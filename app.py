@@ -1,7 +1,6 @@
 import os
 from flask import Flask, render_template_string, request, jsonify
 from flask_cors import CORS
-from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -15,18 +14,18 @@ HTML_INTERFACE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOSOTROS RD - NÚCLEO DE REGISTRO</title>
+    <title>NOSOTROS RD - MASTER HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #000; --accent: #2ecc71; --bg: #fff; 
-            --border: #ddd; --danger: #ff4444; --info: #3498db;
+            --border: #ddd; --danger: #ff4444; --warning: #f39c12; --support: #9b59b6;
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; }
 
-        /* LOGIN */
+        /* BLOQUEO */
         #lock { background: var(--primary); height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 9999; }
-        .lock-box { background: #fff; padding: 40px; border-radius: 20px; text-align: center; width: 320px; }
+        .lock-box { background: #fff; padding: 40px; border-radius: 20px; text-align: center; width: 320px; border-top: 5px solid var(--accent); }
 
         /* DASHBOARD */
         .sidebar { width: 260px; background: var(--primary); height: 100vh; position: fixed; color: #fff; z-index: 1000; }
@@ -40,27 +39,33 @@ HTML_INTERFACE = """
         .main { margin-left: 260px; padding: 30px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px; }
 
-        /* LISTAS DE REGISTRO */
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        
+        /* CARDS */
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .table-res { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: #666; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
 
-        /* ETIQUETAS DETALLADAS */
-        .detail-list { list-style: none; padding: 0; margin: 5px 0; font-size: 11px; color: #555; }
-        .detail-list li { margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        /* SOPORTE Y CHAT */
+        .support-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
+        .ticket-list { height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
+        .ticket-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .ticket-item:hover { background: #f9f9f9; }
+        .ticket-item.active { border-left: 4px solid var(--support); background: #f4f0f7; }
+        
+        .chat-window { height: 350px; background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .bubble { max-width: 80%; padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; font-size: 13px; }
+        .b-in { background: #eee; align-self: flex-start; }
+        .b-out { background: var(--primary); color: #fff; align-self: flex-end; }
 
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .btn-ok { background: var(--accent); color: #fff; }
-        .btn-no { background: var(--danger); color: #fff; }
+        .badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .b-urgent { background: var(--danger); color: white; }
+        .b-tech { background: var(--info); color: white; }
 
         @media (max-width: 800px) {
             .sidebar { width: 70px; } .sidebar span, .nav-profile h4, .nav-profile button { display: none; }
             .main { margin-left: 70px; padding: 15px; }
+            .support-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -69,140 +74,174 @@ HTML_INTERFACE = """
     <div id="lock">
         <div class="lock-box">
             <h2 style="margin:0">NOSOTROS RD</h2>
-            <p style="font-size:12px; color:gray">ACCESO SENTINEL</p>
-            <input type="password" id="pass" placeholder="LLAVE DIOSAMOR" style="width:100%; padding:12px; margin:20px 0; border:1px solid #ddd; border-radius:8px; text-align:center;">
-            <button onclick="unlock()" style="width:100%; padding:12px; background:#000; color:#fff; border:none; border-radius:8px; cursor:pointer;">ENTRAR</button>
+            <p style="font-size:12px; color:gray">CENTRAL DE MANDO</p>
+            <input type="password" id="pass" placeholder="LLAVE DIOSAMOR" style="width:100%; padding:15px; margin:20px 0; border:1px solid #ddd; border-radius:10px; text-align:center; font-size:1.2em;">
+            <button onclick="unlock()" style="width:100%; padding:15px; background:#000; color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">AUTORIZAR ACCESO</button>
         </div>
     </div>
 
     <div id="panel" style="display:none">
         <div class="sidebar">
             <div class="nav-profile">
-                <img src="https://via.placeholder.com/150/111/fff?text=EDWIN" id="admImg" class="profile-img">
+                <img src="https://via.placeholder.com/150/111/fff?text=ADMIN" id="admImg" class="profile-img">
                 <h4 style="margin:10px 0 0 0">Edwin Master</h4>
-                <button onclick="document.getElementById('f').click()" style="background:none; border:none; color:var(--accent); font-size:10px; cursor:pointer;">CAMBIAR LOGO</button>
+                <button onclick="document.getElementById('f').click()" style="background:none; border:none; color:var(--accent); font-size:10px; cursor:pointer;">CONFIGURAR PERFIL</button>
                 <input type="file" id="f" hidden onchange="document.getElementById('admImg').src=URL.createObjectURL(event.target.files[0])">
             </div>
-            <a onclick="show('reg')" class="nav-link active" id="l-reg"><i class="fas fa-mobile-alt"></i> <span>Nuevas Solicitudes</span></a>
-            <a onclick="show('list')" class="nav-link" id="l-list"><i class="fas fa-users"></i> <span>Usuarios Activos</span></a>
-            <a onclick="logout()" class="nav-link" style="color:var(--danger); margin-top:50px;"><i class="fas fa-power-off"></i> <span>Salir</span></a>
+            <a onclick="show('reg')" class="nav-link active" id="l-reg"><i class="fas fa-id-card"></i> <span>Solicitudes Registro</span></a>
+            <a onclick="show('support')" class="nav-link" id="l-support"><i class="fas fa-headset"></i> <span>Central Soporte</span></a>
+            <a onclick="show('list')" class="nav-link" id="l-list"><i class="fas fa-users"></i> <span>Socios Activos</span></a>
+            <a onclick="logout()" class="nav-link" style="color:var(--danger); margin-top:50px;"><i class="fas fa-power-off"></i> <span>Cerrar Sistema</span></a>
         </div>
 
         <div class="main">
             <div class="header">
-                <h1 style="margin:0; font-weight:900">NOSOTROS RD</h1>
+                <h1 style="margin:0; font-weight:900; letter-spacing:-1px;">NOSOTROS RD</h1>
                 <div style="text-align:right">
-                    <span id="sync-status" style="color:var(--accent); font-size:11px; font-weight:bold">● ESCUCHANDO PETICIONES</span>
+                    <span style="color:var(--accent); font-size:11px; font-weight:bold">● CONTROL OPERATIVO</span>
                 </div>
             </div>
 
             <div id="reg" class="tab">
                 <div class="card">
-                    <h3>Solicitudes de Registro del Bot</h3>
-                    <p style="font-size:12px; color:gray;">Aquí aparecerá automáticamente cualquier teléfono que intente conectarse.</p>
+                    <h3>Peticiones de Acceso Bot</h3>
                     <div class="table-res">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Fecha/Hora</th>
-                                    <th>Información del Usuario</th>
-                                    <th>Detalles Técnicos (Bot)</th>
+                                    <th>Dispositivo</th>
+                                    <th>Usuario Detectado</th>
+                                    <th>IMEI / ID</th>
                                     <th>Estado</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="requestTable">
-                                </tbody>
+                            <tbody id="reqBody"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="support" class="tab" style="display:none">
+                <div class="support-grid">
+                    <div class="card">
+                        <h3>Tickets Abiertos</h3>
+                        <div class="ticket-list" id="ticketArea">
+                            </div>
+                    </div>
+                    <div class="card">
+                        <h3 id="chatTitle">Seleccione un Ticket</h3>
+                        <div class="chat-window" id="chatArea">
+                            <div style="margin:auto; color:#ccc; text-align:center;">
+                                <i class="fas fa-comments fa-3x"></i><br>Bandeja de mensajes técnica
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:15px;">
+                            <input type="text" id="reply" placeholder="Escribir respuesta oficial..." style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                            <button onclick="sendReply()" class="btn" style="background:var(--primary); color:white; width:100px;">ENVIAR</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="list" class="tab" style="display:none">
                 <div class="card">
-                    <h3>Base de Datos: Usuarios Autorizados</h3>
-                    <div id="activeUsers"></div>
+                    <h3>Base de Datos de Socios</h3>
+                    <div class="table-res">
+                        <table id="activeTable">
+                            <thead>
+                                <tr><th>Nombre</th><th>Teléfono</th><th>ID Bot</th><th>Plan</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Memoria para no perder datos al reiniciar
         let requests = JSON.parse(localStorage.getItem('nr_req')) || [];
         let actives = JSON.parse(localStorage.getItem('nr_act')) || [];
+        let tickets = JSON.parse(localStorage.getItem('nr_tix')) || [
+            {id: 1, user: "Socio Fundador", msg: "Error al validar el token del banco", type: "URGENTE", chat: []}
+        ];
+        let currentTicket = null;
 
         function unlock() {
             if(document.getElementById('pass').value === "Diosamor") {
                 localStorage.setItem('auth', '1');
                 document.getElementById('lock').style.display = 'none';
                 document.getElementById('panel').style.display = 'block';
-                render();
+                renderAll();
             }
         }
 
-        // Esta función simula la llegada de datos del bot (Lo que pides: Lista completa)
-        function receiveNewDevice(data) {
-            requests.unshift({
-                time: new Date().toLocaleString(),
-                user: data.nombre || "Desconocido",
-                tel: data.telefono || "Sin número",
-                mail: data.correo || "N/A",
-                imei: data.imei || "Desconocido",
-                modelo: data.modelo || "Genérico",
-                ip: data.ip || "0.0.0.0",
-                os: data.version_os || "Android",
-                storage: data.espacio || "2GB"
-            });
-            save();
-            render();
-        }
-
-        function render() {
-            const rt = document.getElementById('requestTable');
-            rt.innerHTML = requests.map((r, i) => `
+        function renderAll() {
+            // Render Peticiones
+            const rb = document.getElementById('reqBody');
+            rb.innerHTML = requests.map((r, i) => `
                 <tr>
-                    <td><small>${r.time}</small></td>
-                    <td>
-                        <strong>${r.user}</strong><br>
-                        <i class="fas fa-phone"></i> ${r.tel}<br>
-                        <i class="fas fa-envelope"></i> ${r.mail}
-                    </td>
-                    <td>
-                        <ul class="detail-list">
-                            <li><span>Modelo:</span> <span class="badge">${r.modelo}</span></li>
-                            <li><span>ID/IMEI:</span> <span class="badge">${r.imei}</span></li>
-                            <li><span>IP:</span> <span class="badge">${r.ip}</span></li>
-                            <li><span>Storage:</span> <span class="badge">${r.storage}</span></li>
-                        </ul>
-                    </td>
-                    <td><span class="status-dot" style="background:orange"></span> Pendiente</td>
-                    <td>
-                        <button class="btn btn-ok" onclick="approve(${i})">AUTORIZAR</button>
-                        <button class="btn btn-no" onclick="remove(${i})">RECHAZAR</button>
-                    </td>
+                    <td><strong>${r.modelo}</strong></td>
+                    <td>${r.user}<br><small>${r.tel}</small></td>
+                    <td><code>${r.imei}</code></td>
+                    <td><span class="badge" style="background:orange; color:white;">Pendiente</span></td>
+                    <td><button onclick="approve(${i})" class="btn" style="background:var(--accent); color:white;">APROBAR</button></td>
                 </tr>
             `).join('');
-            if(requests.length === 0) rt.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#999;">No hay peticiones nuevas en este momento.</td></tr>';
+
+            // Render Tickets Soporte
+            const ta = document.getElementById('ticketArea');
+            ta.innerHTML = tickets.map((t, i) => `
+                <div class="ticket-item ${currentTicket === i ? 'active' : ''}" onclick="openTicket(${i})">
+                    <span class="badge ${t.type === 'URGENTE' ? 'b-urgent' : 'b-tech'}">${t.type}</span>
+                    <div style="font-weight:bold; margin-top:5px;">${t.user}</div>
+                    <div style="font-size:12px; color:#666;">${t.msg.substring(0,30)}...</div>
+                </div>
+            `).join('');
+
+            // Render Tabla Activos
+            const ab = document.querySelector('#activeTable tbody');
+            ab.innerHTML = actives.map((a, i) => `
+                <tr>
+                    <td>${a.user}</td><td>${a.tel}</td><td><code>${a.imei}</code></td>
+                    <td><span class="badge b-tech">MES</span></td>
+                    <td><button class="btn" style="background:#eee;">Detalles</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function openTicket(i) {
+            currentTicket = i;
+            const t = tickets[i];
+            document.getElementById('chatTitle').innerText = "Chat con: " + t.user;
+            const ca = document.getElementById('chatArea');
+            ca.innerHTML = `
+                <div class="bubble b-in"><b>REPORTE INICIAL:</b><br>${t.msg}</div>
+                ${t.chat.map(m => `<div class="bubble ${m.role==='admin'?'b-out':'b-in'}">${m.txt}</div>`).join('')}
+            `;
+            renderAll();
+        }
+
+        function sendReply() {
+            const val = document.getElementById('reply').value;
+            if(currentTicket === null || !val) return;
+            tickets[currentTicket].chat.push({role: 'admin', txt: val});
+            document.getElementById('reply').value = '';
+            save();
+            openTicket(currentTicket);
         }
 
         function approve(i) {
             actives.push(requests[i]);
             requests.splice(i, 1);
-            save(); render();
-            alert("Usuario Autorizado en Nosotros RD");
-        }
-
-        function remove(i) {
-            if(confirm("¿Bloquear esta solicitud?")) {
-                requests.splice(i, 1);
-                save(); render();
-            }
+            save(); renderAll();
         }
 
         function save() {
             localStorage.setItem('nr_req', JSON.stringify(requests));
             localStorage.setItem('nr_act', JSON.stringify(actives));
+            localStorage.setItem('nr_tix', JSON.stringify(tickets));
         }
 
         function show(id) {
@@ -218,25 +257,9 @@ HTML_INTERFACE = """
             if(localStorage.getItem('auth')==='1') {
                 document.getElementById('lock').style.display='none';
                 document.getElementById('panel').style.display='block';
-                render();
+                renderAll();
             }
         }
     </script>
 </body>
 </html>
-"""
-
-@app.route('/')
-def home():
-    return render_template_string(HTML_INTERFACE)
-
-# ESTA ES LA RUTA QUE USARÁ TU APP/BOT PARA MANDAR LA INFO
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.json
-    # Aquí es donde el servidor recibe la lista: Nombre, Tel, IMEI, Modelo, etc.
-    return jsonify({"status": "received", "message": "Datos enviados al Panel Master"}), 200
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
