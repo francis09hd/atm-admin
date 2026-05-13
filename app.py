@@ -9,148 +9,158 @@ CORS(app)
 USER_ID = "Edwinnes"
 PASSWORD_MASTER = "Diosamor"
 
-# --- INTERFAZ PROFESIONAL (HTML/CSS) ---
+# --- INTERFAZ PROFESIONAL DIMENSIONADA ---
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOSOTROS RD - PRO PANEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NOSOTROS RD - ADMIN PANEL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --bg: #f4f7f6;
+            --primary: #1a1c1e;
+            --accent: #2ecc71;
+            --bg: #f8f9fa;
             --white: #ffffff;
-            --text: #333;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #e0e0e0;
         }
 
-        /* TEMA BLANCO PROFESIONAL */
-        body.light-theme {
-            --bg: #f4f7f6;
-            --white: #ffffff;
-            --text: #333;
-            --primary: #2c3e50;
-        }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; }
 
-        /* TEMA OSCURO (Opcional) */
-        body.dark-theme {
-            --bg: #1a1a1a;
-            --white: #2d2d2d;
-            --text: #eee;
-            --primary: #0f0;
-        }
-
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
-        
-        /* PANTALLA DE LOGIN */
+        /* PANTALLA DE LOGIN CON TAMAÑO NORMALIZADO */
         #login-screen {
             display: flex; justify-content: center; align-items: center; height: 100vh;
-            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            background: #1a1c1e;
         }
         .login-card {
-            background: var(--white); padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: center; width: 100%; max-width: 350px;
+            background: var(--white); padding: 40px; border-radius: 12px; 
+            width: 90%; max-width: 400px; box-sizing: border-box; text-align: center;
         }
+        .login-card h2 { margin-bottom: 30px; letter-spacing: 2px; color: var(--primary); }
 
         /* DASHBOARD PRINCIPAL */
         #main-dashboard { display: none; }
+        
         .sidebar {
-            width: 250px; background: var(--primary); height: 100vh; position: fixed; color: white;
-            display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            width: 260px; background: var(--primary); height: 100vh; position: fixed;
+            color: white; padding-top: 30px; transition: 0.3s; z-index: 100;
         }
-        .logo-container { text-align: center; margin-bottom: 30px; }
-        .logo-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; background: #eee; }
-        
-        .menu-item {
-            width: 100%; padding: 15px 25px; text-decoration: none; color: #bdc3c7; display: flex; align-items: center; transition: 0.2s;
-        }
-        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
-        .menu-item i { margin-right: 15px; width: 20px; }
+        .logo-section { text-align: center; padding: 0 20px 40px 20px; border-bottom: 1px solid #333; }
+        .logo-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
 
-        .content { margin-left: 250px; padding: 40px; }
-        .card { background: var(--white); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .nav-menu { padding-top: 20px; }
+        .nav-item {
+            padding: 18px 25px; text-decoration: none; color: #aeb9c1; display: flex;
+            align-items: center; font-size: 16px; transition: 0.2s;
+        }
+        .nav-item:hover { background: #2c2f33; color: white; border-left: 4px solid var(--accent); }
+        .nav-item i { margin-right: 15px; width: 25px; font-size: 20px; }
+
+        .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
         
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-pro { background: var(--accent); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; }
-            .sidebar span, .logo-container h4 { display: none; }
-            .content { margin-left: 70px; }
+        /* TARJETAS DE CONTENIDO */
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { 
+            background: var(--white); padding: 30px; border-radius: 10px; 
+            border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px;
+        }
+
+        /* ELEMENTOS DE FORMULARIO */
+        input[type="text"], input[type="password"], select {
+            width: 100%; padding: 15px; margin: 12px 0; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 16px; background: #fafafa;
+        }
+        .btn-main {
+            background: var(--accent); color: white; border: none; padding: 16px;
+            width: 100%; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-main:hover { background: #27ae60; transform: translateY(-1px); }
+
+        /* RESPONSIVO PARA IPHONE */
+        @media (max-width: 900px) {
+            .sidebar { width: 80px; }
+            .sidebar span, .logo-section h4 { display: none; }
+            .main-content { margin-left: 80px; padding: 20px; }
+            .logo-img { width: 50px; height: 50px; }
         }
     </style>
 </head>
-<body class="light-theme">
+<body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color: #333;">NOSOTROS RD</h2>
-            <p style="color: #666; font-size: 0.9em;">INGRESO AL NÚCLEO</p>
+            <h2>NOSOTROS RD</h2>
             <input type="text" id="user" placeholder="Usuario">
             <input type="password" id="pass" placeholder="Contraseña">
-            <button class="btn-pro" onclick="checkAuth()">ACCEDER</button>
-            <p id="error" style="color: red; font-size: 0.8em; margin-top: 10px; display: none;">Credenciales Incorrectas</p>
+            <button class="btn-main" onclick="validate()">INGRESAR</button>
+            <p id="err" style="color: #e74c3c; margin-top: 15px; display: none;">Acceso Denegado</p>
         </div>
     </div>
 
     <div id="main-dashboard">
         <div class="sidebar">
-            <div class="logo-container">
-                <img src="https://via.placeholder.com/150/000?text=EDWIN" id="profilePic" class="logo-img">
-                <h4 style="margin-top: 10px;">Edwinnes</h4>
+            <div class="logo-section">
+                <img src="https://via.placeholder.com/150/222/fff?text=ADMIN" id="navLogo" class="logo-img">
+                <h4 style="margin: 0; font-size: 18px;">Edwinnes</h4>
             </div>
-            <a href="#" class="menu-item"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
-            <a href="#" class="menu-item"><i class="fas fa-users"></i> <span>Socios</span></a>
-            <a href="#" class="menu-item"><i class="fas fa-file-shield"></i> <span>KYC</span></a>
-            <a href="#" class="menu-item" onclick="toggleTheme()"><i class="fas fa-adjust"></i> <span>Cambiar Tema</span></a>
-            <a href="/" class="menu-item" style="margin-top: auto; color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> <span>Salir</span></a>
+            <div class="nav-menu">
+                <a href="#" class="nav-item"><i class="fas fa-home"></i> <span>Inicio</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-user-plus"></i> <span>Nuevo Socio</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-shield-halved"></i> <span>KYC & Seguridad</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-gear"></i> <span>Configuración</span></a>
+                <a href="/" class="nav-item" style="color: #ff7675; margin-top: 50px;"><i class="fas fa-power-off"></i> <span>Cerrar Sesión</span></a>
+            </div>
         </div>
 
-        <div class="content">
-            <h1>Bienvenido, Edwinnes</h1>
+        <div class="main-content">
+            <div class="header-bar">
+                <h1>Panel de Control</h1>
+                <span style="color: var(--text-muted);">Estado: <strong style="color: var(--accent);">● En Línea</strong></span>
+            </div>
+
             <div class="card">
-                <h3>Configuración de Perfil</h3>
-                <p>Sube tu logotipo o foto para el menú:</p>
-                <input type="file" accept="image/*" onchange="updatePhoto(event)">
+                <h3>Identidad Visual</h3>
+                <p style="color: var(--text-muted);">Sube tu foto para personalizar el logotipo del menú.</p>
+                <input type="file" accept="image/*" onchange="uploadLogo(event)">
             </div>
 
             <div class="card">
                 <h3>Registro de Socios Fundadores</h3>
-                <input type="text" placeholder="Nombre del Socio">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="text" placeholder="Nombre Completo">
+                    <input type="text" placeholder="Cédula / ID">
+                </div>
                 <select>
                     <option>Categoría: Clásico</option>
                     <option>Categoría: Estándar</option>
                     <option>Categoría: Premium</option>
                     <option>Categoría: Elite</option>
                 </select>
-                <button class="btn-pro">Guardar Registro</button>
+                <button class="btn-main">Guardar en Base de Datos</button>
             </div>
         </div>
     </div>
 
     <script>
-        function checkAuth() {
+        function validate() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
             if(u === "Edwinnes" && p === "Diosamor") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-dashboard').style.display = 'block';
             } else {
-                document.getElementById('error').style.display = 'block';
+                document.getElementById('err').style.display = 'block';
             }
         }
 
-        function updatePhoto(event) {
-            const pic = document.getElementById('profilePic');
-            pic.src = URL.createObjectURL(event.target.files[0]);
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-theme');
-            document.body.classList.toggle('light-theme');
+        function uploadLogo(event) {
+            const logo = document.getElementById('navLogo');
+            logo.src = URL.createObjectURL(event.target.files[0]);
         }
     </script>
 </body>
