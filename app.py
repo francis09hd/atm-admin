@@ -5,18 +5,16 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# --- CREDENCIALES MAESTRAS ---
 USER_ID = "Edwinnes"
 PASSWORD_MASTER = "Diosamor"
 
-# --- INTERFAZ PROFESIONAL DIMENSIONADA ---
 HTML_INTERFACE = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOSOTROS RD - ADMIN PANEL</title>
+    <title>NOSOTROS RD - CONTROL PANEL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -29,64 +27,67 @@ HTML_INTERFACE = """
             --border: #e0e0e0;
         }
 
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; }
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            margin: 0; 
+            line-height: 1.6; /* Evita que las letras se encimen */
+        }
 
-        /* PANTALLA DE LOGIN CON TAMAÑO NORMALIZADO */
+        /* LOGIN */
         #login-screen {
             display: flex; justify-content: center; align-items: center; height: 100vh;
-            background: #1a1c1e;
+            background: #1a1c1e; position: fixed; width: 100%; z-index: 1000;
         }
         .login-card {
             background: var(--white); padding: 40px; border-radius: 12px; 
-            width: 90%; max-width: 400px; box-sizing: border-box; text-align: center;
+            width: 90%; max-width: 400px; text-align: center;
         }
-        .login-card h2 { margin-bottom: 30px; letter-spacing: 2px; color: var(--primary); }
 
-        /* DASHBOARD PRINCIPAL */
+        /* DASHBOARD */
         #main-dashboard { display: none; }
         
         .sidebar {
             width: 260px; background: var(--primary); height: 100vh; position: fixed;
-            color: white; padding-top: 30px; transition: 0.3s; z-index: 100;
+            color: white; padding-top: 30px; z-index: 100;
         }
-        .logo-section { text-align: center; padding: 0 20px 40px 20px; border-bottom: 1px solid #333; }
-        .logo-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
+        .logo-section { text-align: center; padding: 0 20px 30px 20px; border-bottom: 1px solid #333; }
+        .logo-img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 10px; }
 
-        .nav-menu { padding-top: 20px; }
+        .nav-menu { padding-top: 15px; }
         .nav-item {
-            padding: 18px 25px; text-decoration: none; color: #aeb9c1; display: flex;
-            align-items: center; font-size: 16px; transition: 0.2s;
+            padding: 15px 25px; text-decoration: none; color: #aeb9c1; display: flex;
+            align-items: center; font-size: 15px; transition: 0.2s; cursor: pointer;
         }
-        .nav-item:hover { background: #2c2f33; color: white; border-left: 4px solid var(--accent); }
-        .nav-item i { margin-right: 15px; width: 25px; font-size: 20px; }
+        .nav-item:hover, .nav-item.active { background: #2c2f33; color: white; border-left: 4px solid var(--accent); }
+        .nav-item i { margin-right: 12px; width: 20px; font-size: 18px; }
 
-        .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
+        .main-content { margin-left: 260px; padding: 30px; min-height: 100vh; }
         
-        /* TARJETAS DE CONTENIDO */
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .card { 
-            background: var(--white); padding: 30px; border-radius: 10px; 
-            border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px;
+            background: var(--white); padding: 25px; border-radius: 10px; 
+            border: 1px solid var(--border); margin-bottom: 20px; display: none;
         }
+        .card.active { display: block; }
 
-        /* ELEMENTOS DE FORMULARIO */
-        input[type="text"], input[type="password"], select {
-            width: 100%; padding: 15px; margin: 12px 0; border: 1px solid var(--border);
-            border-radius: 8px; font-size: 16px; background: #fafafa;
+        h1, h3 { margin-bottom: 20px; line-height: 1.2; }
+        p { margin-bottom: 15px; }
+
+        input, select {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 15px; display: block;
         }
         .btn-main {
-            background: var(--accent); color: white; border: none; padding: 16px;
-            width: 100%; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+            background: var(--accent); color: white; border: none; padding: 14px;
+            width: 100%; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer;
         }
-        .btn-main:hover { background: #27ae60; transform: translateY(-1px); }
 
-        /* RESPONSIVO PARA IPHONE */
         @media (max-width: 900px) {
-            .sidebar { width: 80px; }
+            .sidebar { width: 70px; }
             .sidebar span, .logo-section h4 { display: none; }
-            .main-content { margin-left: 80px; padding: 20px; }
-            .logo-img { width: 50px; height: 50px; }
+            .main-content { margin-left: 70px; padding: 15px; }
+            .logo-img { width: 45px; height: 45px; }
         }
     </style>
 </head>
@@ -105,57 +106,82 @@ HTML_INTERFACE = """
     <div id="main-dashboard">
         <div class="sidebar">
             <div class="logo-section">
-                <img src="https://via.placeholder.com/150/222/fff?text=ADMIN" id="navLogo" class="logo-img">
-                <h4 style="margin: 0; font-size: 18px;">Edwinnes</h4>
+                <img src="https://via.placeholder.com/150/222/fff?text=EDWIN" id="navLogo" class="logo-img">
+                <h4 style="margin: 0;">Edwinnes</h4>
             </div>
             <div class="nav-menu">
-                <a href="#" class="nav-item"><i class="fas fa-home"></i> <span>Inicio</span></a>
-                <a href="#" class="nav-item"><i class="fas fa-user-plus"></i> <span>Nuevo Socio</span></a>
-                <a href="#" class="nav-item"><i class="fas fa-shield-halved"></i> <span>KYC & Seguridad</span></a>
-                <a href="#" class="nav-item"><i class="fas fa-gear"></i> <span>Configuración</span></a>
-                <a href="/" class="nav-item" style="color: #ff7675; margin-top: 50px;"><i class="fas fa-power-off"></i> <span>Cerrar Sesión</span></a>
+                <a onclick="showTab('inicio')" class="nav-item active" id="btn-inicio"><i class="fas fa-home"></i> <span>Inicio</span></a>
+                <a onclick="showTab('registro')" class="nav-item" id="btn-registro"><i class="fas fa-user-plus"></i> <span>Registro de Usuario</span></a>
+                <a onclick="showTab('identidad')" class="nav-item" id="btn-identidad"><i class="fas fa-image"></i> <span>Identidad Visual</span></a>
+                <a onclick="showTab('seguridad')" class="nav-item" id="btn-seguridad"><i class="fas fa-shield-halved"></i> <span>Seguridad</span></a>
+                <a onclick="logout()" class="nav-item" style="color: #ff7675; margin-top: 30px;"><i class="fas fa-power-off"></i> <span>Cerrar Sesión</span></a>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="header-bar">
-                <h1>Panel de Control</h1>
-                <span style="color: var(--text-muted);">Estado: <strong style="color: var(--accent);">● En Línea</strong></span>
+            <div id="inicio" class="card active">
+                <h1>Panel Principal</h1>
+                <p>Bienvenido al sistema de gestión de <strong>Nosotros RD</strong>. Seleccione una opción del menú lateral.</p>
             </div>
 
-            <div class="card">
-                <h3>Identidad Visual</h3>
-                <p style="color: var(--text-muted);">Sube tu foto para personalizar el logotipo del menú.</p>
-                <input type="file" accept="image/*" onchange="uploadLogo(event)">
-            </div>
-
-            <div class="card">
+            <div id="registro" class="card">
                 <h3>Registro de Socios Fundadores</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <input type="text" placeholder="Nombre Completo">
-                    <input type="text" placeholder="Cédula / ID">
-                </div>
+                <input type="text" placeholder="Nombre del Socio">
+                <input type="text" placeholder="Cédula / ID">
                 <select>
                     <option>Categoría: Clásico</option>
                     <option>Categoría: Estándar</option>
                     <option>Categoría: Premium</option>
                     <option>Categoría: Elite</option>
                 </select>
-                <button class="btn-main">Guardar en Base de Datos</button>
+                <button class="btn-main">Guardar Socio</button>
+            </div>
+
+            <div id="identidad" class="card">
+                <h3>Identidad Visual</h3>
+                <p>Actualice su logotipo o foto de perfil del sistema:</p>
+                <input type="file" accept="image/*" onchange="uploadLogo(event)">
+            </div>
+
+            <div id="seguridad" class="card">
+                <h3>Protocolos de Seguridad</h3>
+                <p>Estado del Sistema: <strong style="color: var(--accent);">Protegido</strong></p>
+                <button class="btn-main" style="background:#333;">Cambiar Llave Diosamor</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Comprobar si ya estaba logueado
+        window.onload = function() {
+            if(localStorage.getItem('logged') === 'true') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-dashboard').style.display = 'block';
+            }
+        }
+
         function validate() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
             if(u === "Edwinnes" && p === "Diosamor") {
+                localStorage.setItem('logged', 'true');
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-dashboard').style.display = 'block';
             } else {
                 document.getElementById('err').style.display = 'block';
             }
+        }
+
+        function logout() {
+            localStorage.removeItem('logged');
+            window.location.reload();
+        }
+
+        function showTab(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('active');
         }
 
         function uploadLogo(event) {
